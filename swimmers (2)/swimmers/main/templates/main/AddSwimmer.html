@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="cnt">
+    <form name="swmr">
+        <div class="mb-3">
+            <label class="form-label">Name</label>
+            <input type="text" class="form-control"  name ="Name" >
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Weight in kg</label>
+            <input type="number" class="form-control"  name ="Weight" >
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Age</label>
+            <input type="number" class="form-control"  name ="Age" >
+        </div>
+        <div>
+            <div>
+                <button type="button" class="btn btn-outline-success" onclick="addfacts()">Add Fact</button>
+                <div id="ff" >
+                    <div class="containerfact">
+                        <div class="mb-3">
+                            <label class="form-label ">Fact</label>
+                            <input class="form-control fact" >
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label ">Description</label>
+                            <textarea class="form-control fact"  rows="3"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <button type="button" class="btn btn-outline-success" onclick="addawwards()">Add Award</button>
+                <div id="award">
+                    <div class="containeraward">
+                        <div class="mb-3">
+                            <label class="form-label">Name</label>
+                            <input type="text"  class="form-control aw"  name ="Name" >
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Date</label>
+                            <input type="date" class="form-control aw"  name ="Date" >
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <button type="button" class="btn btn-outline-success" onclick="formcontent()">Add</button>
+    </form>
+    <script>
+        
+        let addawwards = () =>{
+            let elem = document.getElementsByClassName('containeraward')[0];
+            console.log(elem)
+            let cont = document.getElementById("award");
+            
+            cont.append(elem.cloneNode(true));
+        }
+        let addfacts = () =>{
+            let elem = document.getElementsByClassName('containerfact')[0];
+            console.log(elem)
+            let cont = document.getElementById('ff');
+            console.log(cont)
+            cont.append(elem.cloneNode(true));
+        }
+        let getd = (name) =>{
+            cont = document.getElementsByClassName(name);
+            console.log(cont)
+            let res = []
+            for (let i = 0; i < cont.length; i = i+2) {
+                console.log([cont[i], cont[i+1]])
+                res.push([cont[i].value, cont[i+1].value])
+                
+            }
+            return res
+        }
+        let formcontent = () =>{
+            let form = document.forms.swmr;
+            let resp = {
+                Name : form[0].value,
+                Weight : parseInt(form.Weight.value),
+                Age : parseInt(form.Age.value),
+                Awards: getd('aw'),
+                Facts: getd('fact'),
+            }
+            sendcnt('http://127.0.0.1:8000/create/', resp)
+            location.href = 'http://127.0.0.1:8000/'
+        }
+        let  sendcnt = async (url, cnt)=>{
+            
+            try {
+                const csrftoken = getCookie('csrftoken');
+                const response = await fetch(url, {
+                    method: 'POST', // или 'PUT'
+                    body: JSON.stringify(cnt), // данные могут быть 'строкой' или {объектом}!
+                    headers: {
+                        'Content-Type': 'application/json',
+                        "X-CSRFToken": csrftoken
+                    }
+                });
+                const json = await response.json();
+                console.log('Успех:', JSON.stringify(json));
+            } catch (error) {
+                console.log( error);
+            }
+        
+        };
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+</div>
+{% endblock %}
